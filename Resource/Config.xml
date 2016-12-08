@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<URL>https://az-cpt-qa.azurewebsites.net/app/index.html</URL>
+	<GoogleExe>D:\\Program dir\\Google\\Chrome\\Application\\chrome.exe</GoogleExe>
+	<GoogleBinary>C:\\Users\\Ariel\\workspace\\chromedriver.exe</GoogleBinary>
+</config>
