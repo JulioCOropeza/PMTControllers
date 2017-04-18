@@ -22,8 +22,8 @@ public class logActions{
 
 	public void login() throws Exception{
 		//this pass and user should be set in a xml with usernames and passwords
-		driver.findElement(login.username).sendKeys("ariel.rojas@intertecintl.com");
-		driver.findElement(login.password).sendKeys("Anteojos1");
+		driver.findElement(login.username).sendKeys("julio.oropeza@intertecintl.com");
+		driver.findElement(login.password).sendKeys("Roller.2!");
 		WebDriverWait wait = new WebDriverWait(driver, 10);
 		//this need to be set in a specific function in commons 
 		wait.until(ExpectedConditions.elementToBeClickable(login.signIn));
