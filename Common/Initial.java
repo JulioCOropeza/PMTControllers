@@ -22,7 +22,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import Enums.XMlEnum;
-
+import net.sourceforge.htmlunit.corejs.javascript.ast.ThrowStatement;
 
 public class Initial {
 	WebDriver driver;
@@ -44,6 +44,10 @@ public class Initial {
 
 			options.addArguments(getValueFromConfig(XMlEnum.ChromeLoadExtensionModHead));
 
+			// add parameter which will disable the extension
+			// options.addArguments("--disable-extensions-file-access-check");
+			// options.addArguments("chrome.switches","--disable-extensions");
+
 			driver = new ChromeDriver(options);
 			driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
@@ -51,27 +55,33 @@ public class Initial {
 			// set the context on the extension so the localStorage can be
 			// accessed
 
-			Object[] modHeader = readModHeaderFile();
+			String userFlag = "1"; // flag to look for into the .xls file
+			Object[] modHeader = readModHeaderFile(userFlag);
 			String fileHeader = modHeader[0].toString();
 			String fileEmail = modHeader[1].toString();
-						
-			// setup ModHeader with two headers (token1 and token2)
-			((JavascriptExecutor) driver)
-					.executeScript("localStorage.setItem('profiles', JSON.stringify([{                "
-							+ "  title: 'Selenium', hideComment: true, appendMode: '',           "						
-							+ "  headers: [                                                      " 
-							+ "    {enabled: true, name: '" + fileHeader + "', value: '" + fileEmail + "', comment: ''} "
-							+ "  ],                                                              "
-							+ "  respHeaders: [],                                                "
-							+ "  filters: []                                                     "
-							+ "}]));                                                             ");
+			setConfigModHeader(fileHeader, fileEmail);
 
 			return driver;
 		} catch (Exception e) {
+
 			return null; // need to change for a exception
 
 		}
 
+	}
+
+	public void setConfigModHeader(String fileHeader, String fileEmail) throws Exception {
+		// setup ModHeader with two headers (token1 and token2)
+		((JavascriptExecutor) driver).executeScript("localStorage.setItem('profiles', JSON.stringify([{                "
+				+ "  title: 'Selenium', hideComment: true, appendMode: '',           "
+				+ "  headers: [                                                      " + "    {enabled: true, name: '"
+				+ fileHeader + "', value: '" + fileEmail + "', comment: ''} "
+				+ "  ],                                                              "
+				+ "  respHeaders: [],                                                "
+				+ "  filters: []                                                     "
+				+ "}]));                                                             ");
+
+		// return driver;
 	}
 
 	public String getValueFromConfig(XMlEnum Value) throws Exception {
@@ -92,86 +102,90 @@ public class Initial {
 		return content;
 
 	}
-	
-	public Object[] readModHeaderFile()  throws IOException{
+
+	public Object[] readModHeaderFile(String userFlag) throws IOException {
+		// userFlag = value to look for in the first column into the xlsx file
 
 		Object[] tempHeader = null;
 		try {
-			tempHeader = readExcel (getValueFromConfig(XMlEnum.FileProfileModHead), "Profiles");
-			
+			tempHeader = readExcel(getValueFromConfig(XMlEnum.FileProfileModHead), "Profiles", userFlag);
+
 		} catch (IOException e) {
 			throw new IOException("Cannot find the Profile Header Configuration File");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return tempHeader;
-		
+
 	}
-	
-	// read an excel file looking for a row with a number 1 in the first cell
+
+	// read an excel file looking for a row with a number defined by idRowGet in
+	// the first cell
 	// return an array
-    public Object[] readExcel(String fileName,String sheetName) throws IOException{
+	public Object[] readExcel(String fileName, String sheetName, String idRowGet) throws IOException {
 
-    //Create an object of File class to open xlsx file
-    File file =    new File(fileName);
+		// Create an object of File class to open xlsx file
+		File file = new File(fileName);
 
-    //Create an object of FileInputStream class to read excel file
-    FileInputStream inputStream = new FileInputStream(file);
+		// Create an object of FileInputStream class to read excel file
+		FileInputStream inputStream = new FileInputStream(file);
 
-    Workbook guru99Workbook = null;
+		Workbook guru99Workbook = null;
 
-    //Find the file extension by splitting file name in substring  and getting only extension name
-    String fileExtensionName = fileName.substring(fileName.indexOf("."));
+		// Find the file extension by splitting file name in substring and
+		// getting only extension name
+		String fileExtensionName = fileName.substring(fileName.indexOf("."));
 
-    //Check condition if the file is xlsx file
-    if(fileExtensionName.equals(".xlsx")){
+		// Check condition if the file is xlsx file
+		if (fileExtensionName.equals(".xlsx")) {
 
-    //If it is xlsx file then create object of XSSFWorkbook class
-    guru99Workbook = new XSSFWorkbook(inputStream);
+			// If it is xlsx file then create object of XSSFWorkbook class
+			guru99Workbook = new XSSFWorkbook(inputStream);
 
-    }
+		}
 
-    //Check condition if the file is xls file
-    else if(fileExtensionName.equals(".xls")){
+		// Check condition if the file is xls file
+		else if (fileExtensionName.equals(".xls")) {
 
-        //If it is xls file then create object of XSSFWorkbook class
-        guru99Workbook = new HSSFWorkbook(inputStream);
+			// If it is xls file then create object of XSSFWorkbook class
+			guru99Workbook = new HSSFWorkbook(inputStream);
 
-    }
+		}
 
-    //Read sheet inside the workbook by its name
-    org.apache.poi.ss.usermodel.Sheet guru99Sheet = guru99Workbook.getSheet(sheetName);
+		// Read sheet inside the workbook by its name
+		org.apache.poi.ss.usermodel.Sheet guru99Sheet = guru99Workbook.getSheet(sheetName);
 
-    //Find number of rows in excel file
-    int rowCount = guru99Sheet.getLastRowNum()-guru99Sheet.getFirstRowNum();
+		// Find number of rows in excel file
+		int rowCount = guru99Sheet.getLastRowNum() - guru99Sheet.getFirstRowNum();
 
-    Object[] tempHeader = {null,null,null,null};
-    //Create a loop over all the rows of excel file to read it
-    for (int i = 0; i < rowCount+1; i++) {
+		// Object[] tempHeader = {null,null,null,null};
+		Object[] tempHeader = new Object[100];
 
-        Row row = guru99Sheet.getRow(i);
+		// Create a loop over all the rows of excel file to read it
+		for (int i = 0; i < rowCount + 1; i++) {
 
-        //Create a loop to print cell values in a row
+			Row row = guru99Sheet.getRow(i);
 
-       
-        for (int j = 0; j < row.getLastCellNum(); j++) {
+			// Create a loop to print cell values in a row
 
-            //Print Excel data in console
+			for (int j = 0; j < row.getLastCellNum(); j++) {
 
-            System.out.print(row.getCell(j).getStringCellValue());
-                       
-            if (row.getCell(0).getStringCellValue().compareTo("1") == 0 && j > 0 ){
-            	tempHeader[j-1] = row.getCell(j).getStringCellValue();
-            }
-        }
+				// Print Excel data in console
 
-       System.out.println();
+				System.out.print(row.getCell(j).getStringCellValue());
 
-    }
+				if (row.getCell(0).getStringCellValue().compareTo(idRowGet) == 0 && j > 0) {
+					tempHeader[j - 1] = row.getCell(j).getStringCellValue();
+				}
+			}
 
-    return tempHeader;
+			System.out.println();
 
-    }
+		}
+
+		return tempHeader;
+
+	}
 }
