@@ -56,7 +56,7 @@ public class Initial {
 			// accessed
 
 			String userFlag = "1"; // flag to look for into the .xls file
-			Object[] modHeader = readModHeaderFile(userFlag);
+			Object[] modHeader = readModHeaderFile(userFlag, "Profiles");
 			String fileHeader = modHeader[0].toString();
 			String fileEmail = modHeader[1].toString();
 			setConfigModHeader(fileHeader, fileEmail);
@@ -103,22 +103,19 @@ public class Initial {
 
 	}
 
-	public Object[] readModHeaderFile(String userFlag) throws IOException {
+	public Object[] readModHeaderFile(String userFlag, String sSheetName) throws IOException {
 		// userFlag = value to look for in the first column into the xlsx file
 
 		Object[] tempHeader = null;
 		try {
-			tempHeader = readExcel(getValueFromConfig(XMlEnum.FileProfileModHead), "Profiles", userFlag);
-
+			tempHeader = readExcel(getValueFromConfig(XMlEnum.FileProfileModHead), sSheetName, userFlag);
 		} catch (IOException e) {
 			throw new IOException("Cannot find the Profile Header Configuration File");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		return tempHeader;
-
 	}
 
 	// read an excel file looking for a row with a number defined by idRowGet in
@@ -132,7 +129,7 @@ public class Initial {
 		// Create an object of FileInputStream class to read excel file
 		FileInputStream inputStream = new FileInputStream(file);
 
-		Workbook guru99Workbook = null;
+		Workbook myWorkbook = null;
 
 		// Find the file extension by splitting file name in substring and
 		// getting only extension name
@@ -142,50 +139,41 @@ public class Initial {
 		if (fileExtensionName.equals(".xlsx")) {
 
 			// If it is xlsx file then create object of XSSFWorkbook class
-			guru99Workbook = new XSSFWorkbook(inputStream);
-
+			myWorkbook = new XSSFWorkbook(inputStream);
 		}
 
 		// Check condition if the file is xls file
 		else if (fileExtensionName.equals(".xls")) {
 
 			// If it is xls file then create object of XSSFWorkbook class
-			guru99Workbook = new HSSFWorkbook(inputStream);
-
+			myWorkbook = new HSSFWorkbook(inputStream);
 		}
 
 		// Read sheet inside the workbook by its name
-		org.apache.poi.ss.usermodel.Sheet guru99Sheet = guru99Workbook.getSheet(sheetName);
+		org.apache.poi.ss.usermodel.Sheet mySheet = myWorkbook.getSheet(sheetName);
 
 		// Find number of rows in excel file
-		int rowCount = guru99Sheet.getLastRowNum() - guru99Sheet.getFirstRowNum();
-
-		// Object[] tempHeader = {null,null,null,null};
-		Object[] tempHeader = new Object[100];
+		int rowCount = mySheet.getLastRowNum() - mySheet.getFirstRowNum();
+		
+		Object[] tempHeader = new Object[rowCount+1];
 
 		// Create a loop over all the rows of excel file to read it
 		for (int i = 0; i < rowCount + 1; i++) {
 
-			Row row = guru99Sheet.getRow(i);
+			Row row = mySheet.getRow(i);
 
 			// Create a loop to print cell values in a row
-
 			for (int j = 0; j < row.getLastCellNum(); j++) {
 
 				// Print Excel data in console
-
 				System.out.print(row.getCell(j).getStringCellValue());
 
 				if (row.getCell(0).getStringCellValue().compareTo(idRowGet) == 0 && j > 0) {
 					tempHeader[j - 1] = row.getCell(j).getStringCellValue();
 				}
 			}
-
 			System.out.println();
-
 		}
-
 		return tempHeader;
-
 	}
 }

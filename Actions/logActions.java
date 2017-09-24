@@ -25,11 +25,13 @@ public class logActions{
 		
 	}
 
-	public void login() throws Exception{
+	public void login(Object[] modHeader) throws Exception{
 			
-		//this pass and user should be set in a xml with usernames and passwords
-		driver.findElement(login.username).sendKeys("julio.oropeza@intertecintl.com");
-		driver.findElement(login.password).sendKeys("Roller.3!");
+		String sPassword = modHeader[0].toString();
+		String sEmail = modHeader[1].toString();
+		
+		driver.findElement(login.username).sendKeys(sEmail);
+		driver.findElement(login.password).sendKeys(sPassword);
 		driver.findElement(login.password).sendKeys(Keys.ENTER);
 		WebDriverWait wait = new WebDriverWait(driver, 10);
 	
